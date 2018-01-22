@@ -1,7 +1,6 @@
 var request = require('request');
 var cheerio = require('cheerio');
 var fs = require('fs');
-require('request').debug = true
 
 const humbleKeysUrl = "https://www.humblebundle.com/home/keys";
 
@@ -21,10 +20,17 @@ const options = {
     headers: headers
 };
 
+function getKeyList(){
+  request(options, function(error, response, html){
+    if(!error){
+      var $ = cheerio.load(html);
+      var scripts = $('script').filter(function() {
+        return ($(this).html().indexOf('var gamekeys') > -1);
+      });
 
-request(options, function(error, response, html){
-  if(!error){
-    var $ = cheerio.load(html);
-    console.log(html);
-  }
-});
+      const matchkeys = scripts.first().html().match(/var gamekeys = (.*);/);
+      var keys = JSON.parse(matchkeys[1]);
+      keys.forEach((elem) => {console.log(elem);})
+    }
+  });
+}
