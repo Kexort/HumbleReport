@@ -34,28 +34,29 @@ function getOrderDetails(orderID){
   axios(options2).then((response) => {
     response.data["tpkd_dict"]["all_tpks"].forEach((elem) => {
       g2a.priceCheck(elem["human_name"]).then((response2) => {
-        console.log(elem["human_name"], elem["steam_app_id"], "redeemed_key_val" in elem, response2.data["products"][0]["minPrice"]);
+        var price = 0;
+        if(response2.data["products"].length > 0){
+          price = response2.data["products"][0]["minPrice"];
+        }
+        console.log(elem["human_name"], elem["steam_app_id"], "redeemed_key_val" in elem, price);
       });
     });
   });
 }
 
 function getKeyList(){
-  request(options, function(error, response, html){
-    if(!error){
-      var $ = cheerio.load(html);
+  axios(options).then((response) => {
+      var $ = cheerio.load(response.data);
       var scripts = $('script').filter(function() {
         return ($(this).html().indexOf('var gamekeys') > -1);
       });
-
       const matchkeys = scripts.first().html().match(/var gamekeys = (.*);/);
       var keys = JSON.parse(matchkeys[1]);
       keys.forEach((elem) => {
         console.log(elem);
         getOrderDetails(elem);
       })
-    }
   });
 }
-getOrderDetails('axzRXRbdzFhq8YZM');
-//getKeyList();
+//getOrderDetails('axzRXRbdzFhq8YZM');
+getKeyList();
